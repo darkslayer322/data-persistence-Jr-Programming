@@ -62,6 +62,8 @@ public class MainManager : MonoBehaviour
         } else 
         {
             SaveSystem.SaveData(currentPlayer); // Assume no high-scores exist and just save the player iguess
+            highScorePlayer = currentPlayer;
+            UpdateScoreField();
         } 
         
     }
