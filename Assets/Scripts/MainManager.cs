@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using System.IO;
 using TMPro;
 
 public class MainManager : MonoBehaviour
@@ -25,7 +23,7 @@ public class MainManager : MonoBehaviour
     }
     public void LoadGame()
     {
-        currentPlayer.name = nameField.text;
+        currentPlayer = new PlayerInfo(nameField.text); 
         SceneManager.LoadScene("main");
     }
     public void LoadMenu()
@@ -47,51 +45,33 @@ public class MainManager : MonoBehaviour
         }
 
     }
-
-    void SaveFile()
-    {
-        string path = Application.persistentDataPath + "/highscore.json";
-        string json = JsonUtility.ToJson(currentPlayer);
-        File.WriteAllText(path, json);
-    }
-    void LoadFile()
-    {
-        string path = Application.persistentDataPath + "/highscore.json";
-        Debug.Log(path);
-        if (File.Exists(path))
-        {
-            string json = File.ReadAllText(path);
-            Debug.Log("File loaded");
-            if (json != null)
-            {
-                PlayerInfo highScore = JsonUtility.FromJson<PlayerInfo>(json);
-                Debug.Log("Highscore Player grabbed");
-                Debug.Log(highScore.name + " " + highScore.score);
-                highScorePlayer.name = highScore.name;
-                highScorePlayer.score = highScore.score;
-                UpdateScoreField();
-            }
-        }
-    }
     
     public void AddScore(int score)
     {
+        
         currentPlayer.Update(score);
-        if (currentPlayer.score > highScorePlayer.score)
+        highScorePlayer = SaveSystem.LoadData();
+        if (highScorePlayer != null)
         {
-            UpdateScoreField();
-            SaveFile();
-        }
+            if (currentPlayer.score > highScorePlayer.score)
+            {
+                SaveSystem.SaveData(currentPlayer); // Write current player to savefile
+                highScorePlayer = currentPlayer; // Current player has highscore, so why read from file :shrug:
+                UpdateScoreField(); // Update scoreboard
+            }
+        } else 
+        {
+            SaveSystem.SaveData(currentPlayer); // Assume no high-scores exist and just save the player iguess
+        } 
         
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        PlayerInfo currentPlayer = new PlayerInfo();
-        PlayerInfo highScorePlayer = new PlayerInfo();
-        LoadFile();
         nameField = GameObject.Find("NameInputField").GetComponent<TMP_InputField>();
+        highScorePlayer = SaveSystem.LoadData();
+        UpdateScoreField();
     }
 
     // Update is called once per frame
@@ -100,16 +80,3 @@ public class MainManager : MonoBehaviour
         
     }
 }
-
-[System.Serializable]
-public class PlayerInfo
-{
-    public string name;
-    public int score;
-
-    public void Update(int score)
-    {
-        this.score = score;
-    }
-}
-

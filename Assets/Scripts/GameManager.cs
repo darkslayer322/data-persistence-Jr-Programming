@@ -71,9 +71,12 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        if (m_Points > MainManager.instance.highScorePlayer.score)
+        if (MainManager.instance.highScorePlayer != null)
         {
-            HighScoreText.SetActive(true);
+            if (m_Points > MainManager.instance.highScorePlayer.score)
+            {
+                HighScoreText.SetActive(true);
+            }
         }
         MainManager.instance.AddScore(m_Points);
         m_GameOver = true;
