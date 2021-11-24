@@ -1,0 +1,92 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.Linq;
+using System.IO;
+using TMPro;
+
+public class MainManager : MonoBehaviour
+{
+
+    public static MainManager instance;
+    [SerializeField] private List<Scores> highScoreList;
+    public Scores highScore;
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    void SaveFile()
+    {
+        string path = Application.persistentDataPath + "/highscore.json";
+        string json = JsonUtility.ToJson(highScoreList);
+        File.WriteAllText(path, json);
+    }
+    void LoadFile()
+    {
+        string path = Application.persistentDataPath + "/highscore.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            if (json != null)
+            {
+                highScoreList = JsonUtility.FromJson<List<Scores>>(json);
+            }
+        }
+    }
+    
+
+    public void AddScore(string name, int score)
+    {
+        highScoreList.Add(new Scores { name = name, score = score });
+    }
+
+    Scores GetHighScore()
+    {
+        if (highScoreList != null)
+        {
+            highScoreList.Sort();
+            highScore = highScoreList[0];
+            return highScore;
+        } else { return null; }
+    }
+    void UpdateScoreField()
+    {
+        TextMeshProUGUI scoreField = GameObject.Find("HighScore").GetComponent<TextMeshProUGUI>();
+        highScore = GetHighScore();
+        if (highScore != null)
+        {
+            scoreField.text = highScore.name + " " + highScore.score;
+        } else 
+        { 
+            scoreField.text = "No highscore set"; 
+        }
+
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        highScoreList = new List<Scores>();
+        LoadFile();
+        UpdateScoreField();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
+
+public class Scores
+{
+    public string name;
+    public int score;
+}

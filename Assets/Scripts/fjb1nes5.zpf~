@@ -1,0 +1,72 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.IO;
+using TMPro;
+
+public class MainManager : MonoBehaviour
+{
+
+    public static MainManager instance;
+    private const int highscoreTableLenght = 10;
+    private List<Scores> highScores;
+    private string path = Application.persistentDataPath + "highscores.json";
+
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    void SaveFile(string path)
+    {
+        string json = JsonUtility.ToJson(highScores);
+        File.WriteAllText(path, json);
+    }
+    void LoadFile(string path)
+    {
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            highScores = JsonUtility.FromJson<List<Scores>>(json);
+        }
+    }
+
+    public void UpdateScore(string name, int score)
+    {
+        Scores data = new Scores();
+        data.name = name;
+        data.score = score;
+        highScores.Add(data);
+    }
+
+    void DisplayScores()
+    {
+
+    }
+    // Start is called before the first frame update
+    void Start()
+    {
+        highScores = new List<Scores>();
+        LoadFile(path);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
+
+public class Scores
+{
+    public string name;
+    public int score;
+
+    public void AddScore(string addName, int addScore) { name = addName; score = addName; }
+}
